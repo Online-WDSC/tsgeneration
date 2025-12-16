@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<title>कार्य पूर्णता प्रमाण पत्र</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- PDF library (unchanged) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+/* ===== Certificate No / Date alignment ===== */
+.cert-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  margin:4px 0;
+}
+
+.cert-left{
+  text-align:left;
+}
+
+.cert-right{
+  text-align:right;
+}
+/* ================= A4 PAGE FIX ================= */
+@page{
+  size:A4;
+  margin:12mm;
+}
+
+body{
+  font-family:"Noto Sans Devanagari",Mangal,Arial,sans-serif;
+  background:#f2f4f7;
+}
+body{
+  background:
+    linear-gradient(rgba(240,244,248,0.75), rgba(240,244,248,0.75)),
+    var(--bg-url);
+  background-size: cover;
+  background-attachment: fixed;
+}
+#page{
+  width:100%;
+  max-width:210mm;
+  margin:auto;
+  background:#fff;
+  padding:12mm;
+  box-sizing:border-box;
+  overflow:hidden; /* prevent blank 2nd page */
+  box-shadow:0 0 20px rgba(0,0,0,0.15);
+  border:1px solid #cfd8dc;
+  position:relative;
+}
+}
+/* ===== PREVIEW TOGGLE ===== */
+#page{
+  display:none;        /* default hidden */
+}
+
+#page.show{
+  display:block;       /* when visible */
+}
+
+/* ================= HEADER (IMAGE ONLY) ================= */
+.header-img{
+  width:100%;
+  text-align:center;
+  margin:0 0 6mm 0; /* only image margin */
+}
+
+.header-img img{
+  width:100%;            /* 🔑 stretch till page margin */
+  height:auto;            /* 🔑 keep aspect ratio safe */
+  max-height:120px;       /* limit so page not overflow */
+  object-fit:contain;     /* no distortion */
+  display:block;
+  margin:0 auto;
+}
+
+/* ================= TEXT & FIELDS ================= */
+.line{
+  display:inline-block;
+  min-width:120px;
+  border-bottom:1px dotted #000;
+  font-weight:bold;
+}
+.line.filled{
+  min-width:auto;
+  width:auto;
+  margin-right:4px;
+}
+.filled{
+  border-bottom:none !important;
+}
+
+p{
+  text-align:left;
+  line-height:1.25;
+  margin:4px 0;
+}
+
+.signature{
+  text-align:center;
+  margin-top:35px;
+}
+
+/* ================= CONTROLS ================= */
+.controls{
+  text-align:center;
+  margin:10px 0;
+}
+
+.print-hide{display:block;}
+
+@media print{
+  body{background:#fff}
+  .print-hide{display:none}
+}
+:root{
+  --bg-url: url("https://www.3ds.com/assets/invest/2023-04/engineering-drawing17.jpg");
+}
+#page > *{
+  position:relative;
+  z-index:1;
+}
+/* ===== PREVIEW HIDE / SHOW (RESTORE) ===== */
+#page{
+  display:none;   /* page load par preview hide */
+}
+
+#page.show{
+  display:block;  /* button se show */
+}
+/* ===== CENTER BUTTON CONTROLS ===== */
+.controls{
+  display:flex;
+  justify-content:center;   /* 👈 horizontal center */
+  align-items:center;
+  gap:12px;                 /* buttons ke beech gap */
+  flex-wrap:wrap;
+  text-align:center;
+}
+/* ===== BUTTON PROFESSIONAL LOOK (OPTIONAL) ===== */
+.controls button{
+  padding:6px 14px;
+  font-size:14px;
+  font-weight:500;
+  border-radius:4px;
+  border:1px solid #b0bec5;
+  background:linear-gradient(#ffffff, #eaeff3);
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+
+.controls button:hover{
+  background:linear-gradient(#e3f2fd, #bbdefb);
+  border-color:#64b5f6;
+}
+
+.controls button:active{
+  transform:scale(0.97);
+}
+</style>
+</head>
+<body>
+
+<!-- ================= CONTROLS ================= -->
+<div class="controls print-hide">
+  <label>Upload Letter Head Image:
+    <input type="file" id="headerUpload" accept="image/*">
+  </label><br><br>
+  <label>Work Name चुनें:
+    <select id="workSelect">
+      <option value="">लोड हो रहा है…</option>
+    </select>
+  </label><br><br>
+<button type="button" id="togglePreviewBtn">
+  👁️ Show Preview
+</button>
+<br><br>
+  <button onclick="printPage()">🖨️ Print</button>
+  <button onclick="savePDF()">📄 PDF Save</button>
+</div>
+
+<!-- ================= PAGE ================= -->
+<div id="page">
+
+  <div class="header-img" id="headerPreview"></div>
+
+<h3 style="text-align:center;margin:6px 0;">कार्य पूर्णता प्रमाण पत्र</h3>
+
+  <div class="cert-row">
+  <div class="cert-left">
+    <b>प्रमाण पत्र क्रमांक:</b>
+    <span class="line" id="CC_No"></span>
+  </div>
+
+  <div class="cert-right">
+    <b>दिनांक:</b>
+    <span class="line" id="CC_Date"></span>
+  </div>
+</div>
+  <p>ग्राम पंचायत – <span class="line" id="Gram_Panchayat"></span> /
+     पंचायत समिति – <span class="line" id="Panchayat_Samiti"></span> /
+     जिला – <span class="line" id="District"></span></p>
+
+  <p>1. कार्य का नाम – <span class="line" style="min-width:260px" id="Work_name"></span></p>
+
+  <p>योजना का नाम – <span class="line" id="Project"></span>
+     &nbsp;&nbsp; कार्यकारी संस्था – <span class="line" id="Agency"></span></p>
+
+  <p>2. प्रशासनिक स्वीकृति क्रमांक/दिनांक –
+     <span class="line" id="AS_No"></span> /
+     <span class="line" id="AS_Date"></span></p>
+
+  <p>3. तकनीकी स्वीकृति क्रमांक/दिनांक –
+     <span class="line" id="TS_No"></span> /
+     <span class="line" id="TS_Date"></span></p>
+
+  <p>4. वित्तीय स्वीकृति क्रमांक/दिनांक –
+     <span class="line" id="FS_No"></span> /
+     <span class="line" id="FS_Date"></span></p>
+
+  <p>5. स्वीकृत राशि  – <span class="line" id="Total_Amt"></span>रुपये</p>
+
+  <p>6. कार्य शुरू करने की तिथि – <span class="line" id="Work_Start_Date"></span></p>
+
+  <p>7. कार्य पूर्ण होने की तिथि – <span class="line" id="Work_End_Date"></span></p>
+
+  <p>8. कार्य पर व्यय लेखे के अनुसार –</p>
+  <p>&nbsp;&nbsp;अ. श्रम मदः <span class="line" id="Record_Labour_Amt"></span>रुपये </p> 
+  <p>&nbsp;&nbsp;ब. सामग्री मदः <span class="line" id="Record_Material_Amt"></span>रुपये</p>  
+  <p>&nbsp;&nbsp;कुल राशि – <span class="line" id="Total_Record_Amt"></span>रुपये </p> 
+
+  <p>9. मूल्यांकन के अनुसार –</p>
+  <p>&nbsp;&nbsp;अ. श्रम मदः <span class="line" id="MB_Labour_Amt"></span>रुपये </p> 
+  <p>&nbsp;&nbsp;ब. सामग्री मदः <span class="line" id="MB_Material_Amt"></span>रुपये </p> 
+  <p>&nbsp;&nbsp;कुल राशि – <span class="line" id="Total_MB_Amt"></span>रुपये </p> 
+
+  <p>10. अनुमत कुल राशि – <span class="line" id="Payble_Amt"></span>रुपये </p> 
+
+  <p>11. प्रमाणित किया जाता है कि उपरोक्त कार्य का माप एवं मूल्यांकन ग्रामीण कार्य निर्देशिका-2010 के अनुसार किया गया है। उपरोक्त किये गये कार्य का मूल्यांकन उपरोक्त बिन्दू संख्या -09 में उल्लेखित है, जिसका उपयोग कर स्वीकृत कार्य पूर्ण कर लिया गया है तथा कार्य की फोटो जीकेएन-2010 अनु.सं. 21 के अनुसार ली जाकर संलग्न कर दी गई है। उक्त कार्य के माप का इन्द्राज माप पुस्तिका सं. <span class="line" id="MB_No"></span>
+     पृष्ठ संख्या <span class="line" id="MB_Page"></span> पर कर दिया गया है।
+     यह भी प्रमाणित किया जाता है कि उपरोक्त सृजित परिसम्पति को दिनांक
+     <span class="line" id="Asset_Date"></span> को कार्यकारी संस्था द्वारा
+     <span class="line" id="Handover_To"></span> विभाग को हस्तान्तरित कर दिया गया है।
+     परिसम्पति पंजिका रजिस्टर क्रम सं. <span class="line" id="Asset_No"></span> पर इन्द्राज किया गया है।</p>
+
+  <p>दिनांकः <span class="line" id="Asset_Date2"></span></p>
+
+  <div class="signature">हस्ताक्षर<br>(सक्षम अधिकारी)</div>
+</div>
+
+<script>
+window.onafterprint = () => {
+  // print ke baad preview wapas hide
+  pageEl.classList.remove('show');
+  toggleBtn.textContent = '👁️ Show Preview';
+};
+/* ================= API ================= */
+const API_URL = "https://script.google.com/macros/s/AKfycbyjIMIRYrDR9GoCyW4Q2RrgoyqVZ_esXvpcz4rvYZra1U8FZMti-Cg6eg-JN2j1wVQ7BQ/exec?action=getWorks";
+
+fetch(API_URL)
+.then(r=>r.json())
+.then(data=>{
+  if(!Array.isArray(data)) return;
+  const sel=document.getElementById('workSelect');
+  sel.innerHTML='<option value="">-- Work Name चुनें --</option>';
+  data.forEach(row=>{
+    const o=document.createElement('option');
+    o.value=row.Work_name;
+    o.textContent=row.Work_name;
+    o.dataset.row=JSON.stringify(row);
+    sel.appendChild(o);
+  });
+});
+
+function formatDate(val){
+  if(!val) return '';
+  // If already in DD/MM/YYYY, return as is
+  if(typeof val === 'string' && val.includes('/')) return val;
+  const d = new Date(val);
+  if(isNaN(d)) return '';
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yy = d.getFullYear();
+  return `${dd}/${mm}/${yy}`;
+}
+function printPage(){
+  // 🔑 ensure preview visible
+  pageEl.classList.add('show');
+
+  // slight delay so browser render kar le
+  setTimeout(() => {
+    window.print();
+  }, 100);
+}
+function setVal(id,val){
+  const el = document.getElementById(id);
+  if(!el) return;
+
+  if(val){
+    // date fields formatting
+    if(/Date/.test(id)){
+      el.textContent = formatDate(val);
+    }else{
+      el.textContent = val;
+    }
+    el.classList.add('filled');
+  }else{
+    el.textContent = '';
+  }
+}
+
+document.getElementById('workSelect').addEventListener('change',function(){
+  if(!this.value) return;
+  const r=JSON.parse(this.selectedOptions[0].dataset.row);
+  const keys=[
+    'Gram_Panchayat','Panchayat_Samiti','District','Work_name','Project','Agency',
+    'AS_No','AS_Date','TS_No','TS_Date','FS_No','FS_Date','Total_Amt',
+    'Work_Start_Date','Work_End_Date','Record_Labour_Amt','Record_Material_Amt',
+    'Total_Record_Amt','MB_Labour_Amt','MB_Material_Amt','Total_MB_Amt',
+    'Payble_Amt','MB_No','MB_Page','Asset_Date','Asset_No','Handover_To','CC_No','CC_Date'
+  ];
+  keys.forEach(k=>setVal(k,r[k]));
+  setVal('Asset_Date2',r.Asset_Date);
+});
+
+/* ================= HEADER IMAGE ================= */
+document.getElementById('headerUpload').onchange=e=>{
+  const f=e.target.files[0];
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>document.getElementById('headerPreview').innerHTML=`<img src="${ev.target.result}">`;
+  r.readAsDataURL(f);
+};
+
+/* ================= PDF SAVE (ONE PAGE) ================= */
+function savePDF(){
+  const wasHidden = !pageEl.classList.contains('show');
+
+  // PDF ke liye preview show
+  pageEl.classList.add('show');
+
+  const workName = document.getElementById('workSelect').value;
+
+  html2pdf().set({
+    filename:'karya-poornata-praman-patra.pdf',
+    margin:0,
+    pagebreak:{mode:'avoid-all'},
+    html2canvas:{
+      scale:2,
+      scrollY:0,
+      windowHeight:pageEl.scrollHeight
+    },
+    jsPDF:{
+      unit:'mm',
+      format:'a4',
+      orientation:'portrait'
+    }
+  }).from(pageEl).save().then(()=>{
+
+    // ✅ CC mark issued
+    fetch("https://script.google.com/macros/s/AKfycbyjIMIRYrDR9GoCyW4Q2RrgoyqVZ_esXvpcz4rvYZra1U8FZMti-Cg6eg-JN2j1wVQ7BQ/exec?action=markCC&work="
+  + encodeURIComponent(workName)
+)
+      .then(()=> refreshDropdown());   // 👈 CALL HERE
+
+    // preview wapas hide
+    if(wasHidden){
+      pageEl.classList.remove('show');
+      toggleBtn.textContent = '👁️ Show Preview';
+    }
+  });
+}
+/* ================= REFRESH DROPDOWN ================= */
+function refreshDropdown(){
+  fetch("https://script.google.com/macros/s/AKfycbyjIMIRYrDR9GoCyW4Q2RrgoyqVZ_esXvpcz4rvYZra1U8FZMti-Cg6eg-JN2j1wVQ7BQ/exec?action=getWorks"
+  )
+    .then(r=>r.json())
+    .then(data=>{
+      const sel = document.getElementById('workSelect');
+      sel.innerHTML = '<option value="">-- Work Name चुनें --</option>';
+
+      data.forEach(row=>{
+        const o = document.createElement('option');
+        o.value = row.Work_name;
+        o.textContent = row.Work_name;
+        o.dataset.row = JSON.stringify(row);
+        sel.appendChild(o);
+      });
+    });
+}
+/* ===== PREVIEW TOGGLE LOGIC ===== */
+const pageEl = document.getElementById('page');
+const toggleBtn = document.getElementById('togglePreviewBtn');
+
+toggleBtn.onclick = () => {
+  const isVisible = pageEl.classList.contains('show');
+
+  if(isVisible){
+    pageEl.classList.remove('show');
+    toggleBtn.textContent = '👁️ Show Preview';
+  }else{
+    pageEl.classList.add('show');
+    toggleBtn.textContent = '🙈 Hide Preview';
+  }
+};
+</script>
+</body>
+</html>
