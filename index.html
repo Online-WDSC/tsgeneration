@@ -134,12 +134,22 @@ button:hover{background:#0284c7}
       <button onclick="verifyOTP()">Verify OTP</button>
     </div>
 
+    <!-- ===== PAGE SELECT (NEW) ===== -->
+    <div id="pageSelect" class="hidden">
+      <h3 style="margin:10px 0">पेज चुनें</h3>
+
+      <button onclick="goApp()">Work Entry / App Page</button>
+      <button onclick="goFinal()">Completion Certificate</button>
+
+      <div class="link" onclick="logout()">Logout</div>
+    </div>
+
   </div>
 </div>
 
 <script>
 const API =
-"https://script.google.com/macros/s/AKfycbyjIMIRYrDR9GoCyW4Q2RrgoyqVZ_esXvpcz4rvYZra1U8FZMti-Cg6eg-JN2j1wVQ7BQ/exec"
+"https://script.google.com/macros/s/AKfycbyjIMIRYrDR9GoCyW4Q2RrgoyqVZ_esXvpcz4rvYZra1U8FZMti-Cg6eg-JN2j1wVQ7BQ/exec";
 
 let tempUser="";
 
@@ -164,7 +174,9 @@ async function login(){
 
   if(data.status==="success"){
     localStorage.setItem("LOGGED_IN","yes");
-    location.href="app.html";
+
+    loginForm.classList.add("hidden");
+    pageSelect.classList.remove("hidden");
   }else{
     alert("Login failed ❌");
   }
@@ -207,6 +219,26 @@ async function verifyOTP(){
     alert("Invalid OTP ❌");
   }
 }
+
+/* PAGE NAVIGATION */
+function goApp(){
+  location.href="app.html";
+}
+function goFinal(){
+  location.href="finalexp.html";
+}
+function logout(){
+  localStorage.removeItem("LOGGED_IN");
+  location.reload();
+}
+
+/* AUTO LOGIN CHECK */
+window.addEventListener("load",()=>{
+  if(localStorage.getItem("LOGGED_IN")==="yes"){
+    loginForm.classList.add("hidden");
+    pageSelect.classList.remove("hidden");
+  }
+});
 </script>
 
 </body>
