@@ -1,15 +1,5 @@
 <!doctype html>
 <html lang="hi">
-<script>
-/* ===== LOGIN GUARD ===== */
-(function(){
-  const isLoggedIn = localStorage.getItem("LOGGED_IN");
-  if(isLoggedIn !== "yes"){
-    // ❌ direct access block
-    window.location.replace("index.html");
-  }
-})();
-</script>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -91,10 +81,6 @@ button{
 </head>
 
 <body>
-<div style="text-align:right; padding:10px;">
-  <button onclick="logout()">Logout</button>
-</div>
-
 <div class="wrap">
 
 <h2>Technical Sanction Generation 📄</h2>
@@ -409,12 +395,6 @@ printBtn.onclick=()=>{
   <html><body style="margin:0;white-space:pre-wrap;font-family:'Noto Sans Devanagari'">
   ${LETTERHEAD_BASE64?`<img src="${LETTERHEAD_BASE64}" style="width:100%;display:block">`:''}
   ${fillTemplate().replace(/^\s+/, '')}
-  <script>
-function logout(){
-  localStorage.removeItem("LOGGED_IN");
-  window.location.href = "index.html";
-}
-</script>
   </body></html>`);
   w.document.close();
   w.onload=()=>w.print();
